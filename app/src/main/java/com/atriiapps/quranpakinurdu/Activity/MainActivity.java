@@ -1,10 +1,20 @@
 package com.atriiapps.quranpakinurdu.Activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Cache;
@@ -24,6 +34,7 @@ import com.atriiapps.quranpakinurdu.Utilities.Constants;
 import com.atriiapps.quranpakinurdu.Utilities.pref_utils;
 import com.atriiapps.quranpakinurdu.Utilities.utils;
 import com.atriiapps.quranpakinurdu.databinding.ActivityMainBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -43,26 +54,113 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<SuraMeta> list = new ArrayList<>();
     SuraMetaAdapter adapter;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar.mToolbar);
-lastAyaRead();
+        lastAyaRead();
         initRv();
+        binding.textField.setClickable(false);
+
+
+        utils.setAnimWait(R.anim.fade_in, binding.textField, 0, activity);
+
+        binding.textFF.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                if (!binding.textFF.getText().toString().matches("")) {
+
+                    filter(binding.textFF.getText().toString());
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
 
 
     }
 
+    private void filter(String text) {
+        // creating a new array list to filter our data.
+        ArrayList<SuraMeta> filteredlist = new ArrayList<>();
+
+        // running a for loop to compare elements.
+        for (SuraMeta item : list) {
+            // checking if the entered string matched with any item of our recycler view.
+            if (item.getTname().toLowerCase().contains(text.toLowerCase())) {
+                // if the item is matched we are
+                // adding it to our filtered list.
+                filteredlist.add(item);
+            }
+        }
+        if (filteredlist.isEmpty()) {
+            // if no item is added in filtered list we are
+            // displaying a toast message as no data found.
+            Toast.makeText(this, "No Data Found..", Toast.LENGTH_SHORT).show();
+        } else {
+            // at last we are passing that filtered
+            // list to our adapter class.
+            adapter.filterList(filteredlist);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        utils.setAnimWait(R.anim.fade_in, binding.mSuraRv, 0, activity);
+        utils.setAnimWait(R.anim.fade_in, binding.textField, 0, activity);
+        binding.textFF.setText("");
+        binding.textFF.clearFocus();
+        adapter.filterList(list);
+
+        lastAyaRead();
+    }
+
     private void lastAyaRead() {
+
         pref_utils.PREF_INIT(activity);
-        int lastAya = pref_utils.get_Pref_Int(activity,"last_aya",1)-1;
-        int lastSura = pref_utils.get_Pref_Int(activity,"last_sura",1);
+        int lastAya = pref_utils.get_Pref_Int(activity, "last_aya", -2) ;
+        String last_sura_arabic_name = pref_utils.get_Pref_String(activity, "last_sura_arabic_name", "failed");
+        String last_sura_eng_name = pref_utils.get_Pref_String(activity, "last_sura_eng_name", "failed");
+        int lastSura = pref_utils.get_Pref_Int(activity, "last_sura", 1);
 
-        Toast.makeText(activity, "Last AYA "+lastAya+"\nLast Sura "+lastSura, Toast.LENGTH_SHORT).show();
 
+        if (lastAya > 0) {
+            binding.mLastReadHolder.setVisibility(View.VISIBLE);
+            utils.setAnimWait(R.anim.fade_in, binding.mLastReadHolder, 0, activity);
 
+            binding.mLastRead.mArabicNameLastRead.setText(last_sura_arabic_name);
+
+            binding.mLastRead.mLastReadPointer.setText(lastSura + ":" + lastAya);
+
+            binding.mLastRead.mCardConstraintLastRead.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent();
+                    intent.putExtra("sura_no", String.valueOf(lastSura));
+                    intent.putExtra("sura_name", last_sura_eng_name);
+                    intent.putExtra("sura_arabic_name", last_sura_arabic_name);
+                    startActivity(intent.setClass(activity, SuraActivity.class));
+                }
+            });
+
+            return;
+        }
+
+        binding.mLastReadHolder.setVisibility(View.GONE);
 
 
     }
@@ -83,7 +181,7 @@ lastAyaRead();
         utils.setAnim(R.anim.fade, binding.mLoading, activity);
 
         StringRequest request = new StringRequest(Request.Method.GET, Constants.GET_SURA_META, response -> {
-list.clear();
+            list.clear();
             try {
                 JSONObject mainObj = new JSONObject(response);
 
@@ -113,7 +211,7 @@ list.clear();
         }, error -> {
 
             new Handler().postDelayed(() -> {
-                if(list.size() == 0){
+                if (list.size() == 0) {
                     binding.mLoading.setText("Failed Trying Again in 5 Seconds");
 
 
@@ -173,6 +271,125 @@ list.clear();
         RequestQueue queue = Volley.newRequestQueue(activity);
 
         queue.add(request);
+
+        if (list.size() > 0) {
+            binding.textField.setClickable(true);
+        }
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_sura, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.menu_navigate:
+
+                findAyainQuran();
+
+                break;
+
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void findAyainQuran() {
+
+
+        MaterialAlertDialogBuilder dialogBuilder;
+
+        dialogBuilder = new MaterialAlertDialogBuilder(activity);
+        dialogBuilder.setTitle("Goto Specific Aya in Quran Pak");
+
+
+        EditText editText = new EditText(activity);
+        editText.setHint("Chapter:Verse e.g(2:205)");
+
+
+        dialogBuilder.setView(editText);
+        dialogBuilder.setPositiveButton("Find Aya", (dialogInterface, j) -> {
+
+            String text = editText.getText().toString().trim();
+
+            if (text.matches("") || !text.contains(":") || !isStartWithNumber(text) || !isEndWithNumber(text)) {
+                utils.setToast(activity, "Enter Valid...");
+                return;
+            }
+
+            String sura = text.split(":")[0];
+            String aya = text.split(":")[1];
+
+
+            Intent intent = new Intent();
+            intent.putExtra("sura_no", sura);
+            intent.putExtra("aya_no", Integer.parseInt(aya));
+            startActivity(intent.setClass(activity, SuraActivity.class));
+
+
+        });
+
+        dialogBuilder.show();
+
+
+    }
+
+    private boolean isEndWithNumber(String text) {
+
+        if (text.endsWith("1")) {
+            return true;
+        } else if (text.endsWith("2")) {
+            return true;
+        } else if (text.endsWith("3")) {
+            return true;
+        } else if (text.endsWith("4")) {
+            return true;
+        } else if (text.endsWith("5")) {
+            return true;
+        } else if (text.endsWith("6")) {
+            return true;
+        } else if (text.endsWith("7")) {
+            return true;
+        } else if (text.endsWith("8")) {
+            return true;
+        } else if (text.endsWith("9")) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    private boolean isStartWithNumber(String text) {
+
+        if (text.startsWith("1")) {
+            return true;
+        } else if (text.startsWith("2")) {
+            return true;
+        } else if (text.startsWith("3")) {
+            return true;
+        } else if (text.startsWith("4")) {
+            return true;
+        } else if (text.startsWith("5")) {
+            return true;
+        } else if (text.startsWith("6")) {
+            return true;
+        } else if (text.startsWith("7")) {
+            return true;
+        } else if (text.startsWith("8")) {
+            return true;
+        } else if (text.startsWith("9")) {
+            return true;
+        } else {
+            return false;
+        }
 
 
     }

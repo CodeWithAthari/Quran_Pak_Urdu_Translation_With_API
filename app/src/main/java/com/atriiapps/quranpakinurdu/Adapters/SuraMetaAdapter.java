@@ -23,6 +23,10 @@ public class SuraMetaAdapter extends RecyclerView.Adapter<SuraMetaAdapter.ViewHo
     ArrayList<SuraMeta> list;
     Context context;
 
+    public void filterList(ArrayList<SuraMeta> filterlist) {
+        this.list = filterlist;
+        notifyDataSetChanged();
+    }
 
     public SuraMetaAdapter(ArrayList<SuraMeta> list, Context context) {
         this.list = list;
@@ -51,6 +55,7 @@ public class SuraMetaAdapter extends RecyclerView.Adapter<SuraMetaAdapter.ViewHo
             Intent intent = new Intent();
             intent.putExtra("sura_no",model.getId());
             intent.putExtra("sura_name",model.getTname());
+            intent.putExtra("sura_arabic_name",model.getName());
             context.startActivity(intent.setClass(context, SuraActivity.class));
 
         });
@@ -74,4 +79,6 @@ public class SuraMetaAdapter extends RecyclerView.Adapter<SuraMetaAdapter.ViewHo
             binding = RvSuraBinding.bind(itemView);
         }
     }
+
+
 }

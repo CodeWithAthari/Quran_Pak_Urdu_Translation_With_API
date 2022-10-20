@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -14,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
@@ -39,12 +41,14 @@ import com.atriiapps.quranpakinurdu.Utilities.utils;
 import com.atriiapps.quranpakinurdu.databinding.ActivitySurahBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import me.zhanghai.android.fastscroll.FastScrollScrollView;
 import me.zhanghai.android.fastscroll.FastScroller;
@@ -57,12 +61,12 @@ public class SuraActivity extends AppCompatActivity {
     SuraViewerAdapter adapter;
     ArrayList<TestModel> list = new ArrayList<>();
 
-    String sura_no, sura_name;
+    String sura_no, sura_name, sura_arabic_name;
     JSONArray array;
     ArrayList<ArabicModel> arabicList = new ArrayList<>();
     ArrayList<UrduModel> urduList = new ArrayList<>();
 
-    int lastAya,lastSura;
+    int lastAya, lastSura, aya_no;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,12 +74,66 @@ public class SuraActivity extends AppCompatActivity {
         binding = ActivitySurahBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar.mToolbar);
-pref_utils.PREF_INIT(activity);
+        pref_utils.PREF_INIT(activity);
         sura_no = getIntent().getStringExtra("sura_no");
+        aya_no = getIntent().getIntExtra("aya_no", 1);
         sura_name = getIntent().getStringExtra("sura_name");
+        sura_arabic_name = getIntent().getStringExtra("sura_arabic_name");
+
+
+        if (sura_name == null) {
+            getSuraName();
+
+        }
+
+        pref_utils.put_Pref_String(activity, "last_sura_arabic_name", sura_arabic_name);
+        pref_utils.put_Pref_String(activity, "last_sura_eng_name", sura_name);
+
         VariableUtils.CurrentSura = Integer.parseInt(sura_no);
 
         initRv();
+
+
+    }
+
+    private void getSuraName() {
+        StringRequest request = new StringRequest(Request.Method.GET, Constants.GET_SURA_META_ONE + sura_no,
+
+                response -> {
+
+
+                    try {
+                        JSONObject mainObj = new JSONObject(response);
+                        String status = mainObj.getString("status");
+                        if (!status.equals("Success")) {
+                            utils.setToast(activity, "Message: " + mainObj.getString("message"));
+                            return;
+                        }
+
+                        JSONArray array = mainObj.getJSONArray("Sura");
+
+                        JSONObject suraObj = array.getJSONObject(0);
+
+                        sura_name = suraObj.getString("tname");
+                        sura_arabic_name = suraObj.getString("name");
+
+
+                        VariableUtils.CurrentSura = Integer.parseInt(sura_no);
+                        pref_utils.put_Pref_String(activity, "last_sura_arabic_name", sura_arabic_name);
+                        pref_utils.put_Pref_String(activity, "last_sura_eng_name", sura_name);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                },
+                error -> {
+                });
+
+        RequestQueue queue = Volley.newRequestQueue(activity);
+
+        queue.add(request);
 
 
     }
@@ -94,24 +152,27 @@ pref_utils.PREF_INIT(activity);
     private void lastRead() {
 
 
+        lastAya = pref_utils.get_Pref_Int(activity, "last_aya", 1) ;
+        lastSura = pref_utils.get_Pref_Int(activity, "last_sura", 1);
 
-         lastAya = pref_utils.get_Pref_Int(activity,"last_aya",1)-2;
-         lastSura = pref_utils.get_Pref_Int(activity,"last_sura",1);
-
-        if(lastAya >3 && lastSura == VariableUtils.CurrentSura){
+        if (aya_no > 3) {
+            lastAya = aya_no;
+        }
+        if (lastAya > 3 && lastSura == VariableUtils.CurrentSura) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
 
-                    ((LinearLayoutManager)binding.mSuraViewerRV.getLayoutManager()).scrollToPositionWithOffset(lastAya,0);
-
+                  binding.mSuraViewerRV.scrollToPosition(lastAya-1);
 
 
                 }
             }, 500);
         }
-
+        Toast.makeText(activity, "Verse no: "+lastAya, Toast.LENGTH_SHORT).show();
     }
+
+
 
 
     private void fetchingSura() {
@@ -136,7 +197,7 @@ pref_utils.PREF_INIT(activity);
                 JSONArray arabicArray = suraObj.getJSONArray("arabic");
 
                 JSONArray urduArray = suraObj.getJSONArray("urdu");
-//                utils.log("resp",urduArray.toString());
+                utils.log("resp", urduArray.toString());
 
 //            Adding Arabic Array
                 for (int i = 0; i < arabicArray.length(); i++) {
@@ -274,7 +335,7 @@ pref_utils.PREF_INIT(activity);
         EditText editText = new EditText(activity);
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
         editText.setHint("Enter Aya No, " + list.size());
-        if(lastAya>3){
+        if (lastAya > 3) {
             editText.setText(String.valueOf(lastAya));
 
         }

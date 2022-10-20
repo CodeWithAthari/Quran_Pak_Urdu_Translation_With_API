@@ -44,22 +44,21 @@ public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.Vi
         RvSuraViewerBinding binding = holder.binding;
 
 
-utils.log("position","Current Aya "+position);
+        utils.log("position", "Current Aya " + position);
 
-        pref_utils.put_Pref_Int(context,"last_aya",position);
-        pref_utils.put_Pref_Int(context,"last_sura", VariableUtils.CurrentSura);
+        pref_utils.put_Pref_Int(context, "last_aya", position+3);
+        pref_utils.put_Pref_Int(context, "last_sura", VariableUtils.CurrentSura);
 
 
-        binding.mArabicText.setText(model.getArabicText()+"۔");
+        binding.mArabicText.setText(model.getArabicText() + "۔");
 
-        binding.mUrduText.setText(model.getUrduText() );
+        binding.mUrduText.setText(model.getUrduText());
 
-        binding.mMeta.setText(model.getArabicSura() + ":" + model.getUrduAya());
-        if(position >4){
-            utils.setAnimWait(R.anim.slide_from_bottom_fast,holder.itemView,0,context);
+        binding.mMeta.setText(model.getArabicSura() + ":" + model.getArabicAya());
+        if (position > 4) {
+            utils.setAnimWait(R.anim.slide_from_bottom_fast, holder.itemView, 0, context);
 
         }
-
 
 
     }
