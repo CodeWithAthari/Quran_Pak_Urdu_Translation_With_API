@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Quran Pak Lite</string>
+    <string name="quran_sura_name">البقرة</string>
+    <string name="quran_sura_name_eng">Al-Baqara</string>
+    <string name="quran_sura_meaning_eng">The Cow</string>
+    <string name="quran_sura_type_eng">Medinan</string>
+
+
+    <string name="quran_verse_arabic">اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ۔</string>
+    <string name="quran_verse_urdu"> خدا (جو معبود برحق ہے) اس کے سوا کوئی عبادت کے لائق نہیں ہمیشہ زندہ رہنے والا</string>
+
+
+
+</resources>
