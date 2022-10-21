@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<SuraMeta> list = new ArrayList<>();
     SuraMetaAdapter adapter;
 
+    Constants Constants = new Constants();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar.mToolbar);
+        pref_utils.PREF_INIT(activity);
+        getCurrentQuranVersion();
         lastAyaRead();
         initRv();
         binding.textField.setClickable(false);
@@ -93,6 +96,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void getCurrentQuranVersion() {
+        Constants.QURAN_TRANSLATION_VERSION = pref_utils.get_Pref_String(activity, "quran_version", Constants.DEFAULT_QURAN_TRANSLATION_VERSION_SHARED_PREF);
+    }
+
     private void filter(String text) {
         // creating a new array list to filter our data.
         ArrayList<SuraMeta> filteredlist = new ArrayList<>();
@@ -120,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        getCurrentQuranVersion();
         utils.setAnimWait(R.anim.fade_in, binding.mSuraRv, 0, activity);
         utils.setAnimWait(R.anim.fade_in, binding.textField, 0, activity);
         binding.textFF.setText("");
@@ -131,8 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void lastAyaRead() {
 
-        pref_utils.PREF_INIT(activity);
-        int lastAya = pref_utils.get_Pref_Int(activity, "last_aya", -2) ;
+        int lastAya = pref_utils.get_Pref_Int(activity, "last_aya", -2);
         String last_sura_arabic_name = pref_utils.get_Pref_String(activity, "last_sura_arabic_name", "failed");
         String last_sura_eng_name = pref_utils.get_Pref_String(activity, "last_sura_eng_name", "failed");
         int lastSura = pref_utils.get_Pref_Int(activity, "last_sura", 1);
@@ -154,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("sura_name", last_sura_eng_name);
                     intent.putExtra("sura_arabic_name", last_sura_arabic_name);
                     startActivity(intent.setClass(activity, SuraActivity.class));
+
                 }
             });
 
@@ -209,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         }, error -> {
-
+            utils.log("err", error.toString());
             new Handler().postDelayed(() -> {
                 if (list.size() == 0) {
                     binding.mLoading.setText("Failed Trying Again in 5 Seconds");
@@ -281,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_sura, menu);
+        inflater.inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -289,9 +297,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.menu_navigate:
+            case R.id.main_menu_navigate:
 
                 findAyainQuran();
+
+                break;
+
+            case R.id.main_menu_settings:
+
+                startActivity(new Intent(activity, SettingsActivity.class));
 
                 break;
 
@@ -321,12 +335,12 @@ public class MainActivity extends AppCompatActivity {
 
             if (text.matches("") || !text.contains(":") || !isStartWithNumber(text) || !isEndWithNumber(text)) {
                 utils.setToast(activity, "Enter Valid...");
+                utils.log("edittext", text);
                 return;
             }
 
             String sura = text.split(":")[0];
             String aya = text.split(":")[1];
-
 
             Intent intent = new Intent();
             intent.putExtra("sura_no", sura);
@@ -360,6 +374,8 @@ public class MainActivity extends AppCompatActivity {
         } else if (text.endsWith("8")) {
             return true;
         } else if (text.endsWith("9")) {
+            return true;
+        } else if (text.endsWith("0")) {
             return true;
         } else {
             return false;

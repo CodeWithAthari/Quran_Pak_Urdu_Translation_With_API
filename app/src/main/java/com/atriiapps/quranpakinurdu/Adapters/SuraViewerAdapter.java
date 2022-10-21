@@ -25,6 +25,7 @@ public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.Vi
     ArrayList<TestModel> list;
     Context context;
 
+    String bismillah = "بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ";
 
     public SuraViewerAdapter(ArrayList<TestModel> list, Context context) {
         this.list = list;
@@ -45,12 +46,37 @@ public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.Vi
 
 
         utils.log("position", "Current Aya " + position);
+        if (position < list.size()) {
+            pref_utils.put_Pref_Int(context, "last_aya", position);
+            pref_utils.put_Pref_Int(context, "last_sura", VariableUtils.CurrentSura);
 
-        pref_utils.put_Pref_Int(context, "last_aya", position+3);
-        pref_utils.put_Pref_Int(context, "last_sura", VariableUtils.CurrentSura);
+
+        }
+
+        if(model.getArabicText().trim().startsWith(bismillah)){
+
+            String str = model.getArabicText().trim();
+
+            str = str.replace(bismillah," ");
+
+          if(str.length() < 3){
+                binding.mArabicText.setText(bismillah + str + "۔");
+
+            }
+            else{
+                binding.mArabicText.setText(bismillah +"۔" +"\n"+ str + "۔");
+
+            }
 
 
-        binding.mArabicText.setText(model.getArabicText() + "۔");
+
+
+        }
+        else{
+            binding.mArabicText.setText(model.getArabicText() + "۔");
+
+        }
+
 
         binding.mUrduText.setText(model.getUrduText());
 

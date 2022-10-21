@@ -1,12 +1,6 @@
 package com.atriiapps.quranpakinurdu.Activity;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.LinearSmoothScroller;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.graphics.Color;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -15,7 +9,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
@@ -29,8 +25,6 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.atriiapps.quranpakinurdu.Adapters.SuraViewerAdapter;
 import com.atriiapps.quranpakinurdu.Models.ArabicModel;
-import com.atriiapps.quranpakinurdu.Models.SuraMeta;
-import com.atriiapps.quranpakinurdu.Models.SuraViewer;
 import com.atriiapps.quranpakinurdu.Models.TestModel;
 import com.atriiapps.quranpakinurdu.Models.UrduModel;
 import com.atriiapps.quranpakinurdu.R;
@@ -41,7 +35,6 @@ import com.atriiapps.quranpakinurdu.Utilities.utils;
 import com.atriiapps.quranpakinurdu.databinding.ActivitySurahBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,8 +43,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import me.zhanghai.android.fastscroll.FastScrollScrollView;
-import me.zhanghai.android.fastscroll.FastScroller;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 
 public class SuraActivity extends AppCompatActivity {
@@ -62,11 +53,11 @@ public class SuraActivity extends AppCompatActivity {
     ArrayList<TestModel> list = new ArrayList<>();
 
     String sura_no, sura_name, sura_arabic_name;
-    JSONArray array;
     ArrayList<ArabicModel> arabicList = new ArrayList<>();
     ArrayList<UrduModel> urduList = new ArrayList<>();
 
     int lastAya, lastSura, aya_no;
+    Constants Constants  = new Constants();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +66,7 @@ public class SuraActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar.mToolbar);
         pref_utils.PREF_INIT(activity);
+        Constants.updateConstants();
         sura_no = getIntent().getStringExtra("sura_no");
         aya_no = getIntent().getIntExtra("aya_no", 1);
         sura_name = getIntent().getStringExtra("sura_name");
@@ -83,7 +75,7 @@ public class SuraActivity extends AppCompatActivity {
 
         if (sura_name == null) {
             getSuraName();
-
+utils.setToast(activity,"Searching Verse "+aya_no);
         }
 
         pref_utils.put_Pref_String(activity, "last_sura_arabic_name", sura_arabic_name);
@@ -144,6 +136,8 @@ public class SuraActivity extends AppCompatActivity {
         new FastScrollerBuilder(binding.mSuraViewerRV).build();
         binding.mSuraViewerRV.setAdapter(adapter);
 
+
+
         fetchingSura();
 
 
@@ -158,32 +152,38 @@ public class SuraActivity extends AppCompatActivity {
         if (aya_no > 3) {
             lastAya = aya_no;
         }
+
+
         if (lastAya > 3 && lastSura == VariableUtils.CurrentSura) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-
-                  binding.mSuraViewerRV.scrollToPosition(lastAya-1);
-
-
+            new Handler().postDelayed(() -> {
+                if(lastAya > list.size()){
+                    utils.setToast(activity,"Unknown Verse");
                 }
+              binding.mSuraViewerRV.scrollToPosition(lastAya-1);
+
+
             }, 500);
         }
-        Toast.makeText(activity, "Verse no: "+lastAya, Toast.LENGTH_SHORT).show();
+//
     }
 
 
 
-
+    private void getCurrentQuranVersion() {
+        Constants.QURAN_TRANSLATION_VERSION = pref_utils.get_Pref_String(activity, "quran_version", Constants.DEFAULT_QURAN_TRANSLATION_VERSION_SHARED_PREF);
+//        utils.setToast(activity, Constants.QURAN_TRANSLATION_VERSION);
+    }
+    @SuppressLint("SetTextI18n")
     private void fetchingSura() {
-
+getCurrentQuranVersion();
         binding.mLoading.setText("Loading...");
 
         utils.setAnim(R.anim.fade, binding.mLoading, activity);
 
-        StringRequest request = new StringRequest(Request.Method.GET, Constants.GET_SURA + sura_no, response -> {
+        @SuppressLint("NotifyDataSetChanged") StringRequest request = new StringRequest(Request.Method.GET, Constants.WEBSITE_BASE_URL +"?v="+Constants.QURAN_TRANSLATION_VERSION+"&q=get_sura&sura_no=" + sura_no, response -> {
 
             try {
+//                utils.setToast(activity, Constants.WEBSITE_BASE_URL +"?v="+Constants.QURAN_TRANSLATION_VERSION+"&q=get_sura&sura_no=" + sura_no);
                 JSONObject mainObj = new JSONObject(response);
                 list.clear();
                 String status = mainObj.getString("status");
@@ -232,18 +232,15 @@ public class SuraActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
 
 
-        }, error -> {
-            new Handler().postDelayed(() -> {
-                if (list.size() == 0) {
-                    binding.mLoading.setText("Failed Trying Again in 5 Seconds");
+        }, error -> new Handler().postDelayed(() -> {
+            if (list.size() == 0) {
+                binding.mLoading.setText("Failed Trying Again in 5 Seconds");
 
 
-                    new Handler().postDelayed(() -> fetchingSura(), 5000);
-                    utils.setToast(activity, "Error Again");
-                }
-            }, 2000);
-
-        }) {
+                new Handler().postDelayed(this::fetchingSura, 5000);
+                utils.setToast(activity, "Error Again");
+            }
+        }, 2000)) {
             @Override
             protected Response<String> parseNetworkResponse(NetworkResponse response) {
                 try {
@@ -260,7 +257,7 @@ public class SuraActivity extends AppCompatActivity {
                     cacheEntry.softTtl = softExpire;
                     cacheEntry.ttl = ttl;
                     String headerValue;
-                    headerValue = response.headers.get("Date");
+                    headerValue = Objects.requireNonNull(response.headers).get("Date");
                     if (headerValue != null) {
                         cacheEntry.serverDate = HttpHeaderParser.parseDateAsEpoch(headerValue);
                     }
@@ -271,7 +268,7 @@ public class SuraActivity extends AppCompatActivity {
                     cacheEntry.responseHeaders = response.headers;
                     final String jsonString = new String(response.data,
                             HttpHeaderParser.parseCharset(response.headers));
-                    return Response.success(new String(jsonString), cacheEntry);
+                    return Response.success(jsonString, cacheEntry);
                 } catch (Exception e) {
                     return Response.error(new ParseError(e));
                 }
@@ -307,13 +304,8 @@ public class SuraActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        switch (item.getItemId()) {
-            case R.id.menu_navigate:
-
-                findAya();
-
-                break;
-
+        if (item.getItemId() == R.id.menu_navigate) {
+            findAya();
         }
 
 
