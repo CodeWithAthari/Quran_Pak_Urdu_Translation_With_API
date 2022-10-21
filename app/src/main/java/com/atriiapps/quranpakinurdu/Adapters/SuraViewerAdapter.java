@@ -8,26 +8,23 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.atriiapps.quranpakinurdu.Models.SuraMeta;
-import com.atriiapps.quranpakinurdu.Models.SuraViewer;
-import com.atriiapps.quranpakinurdu.Models.TestModel;
+import com.atriiapps.quranpakinurdu.Models.SuraModel;
 import com.atriiapps.quranpakinurdu.R;
 import com.atriiapps.quranpakinurdu.Utilities.VariableUtils;
 import com.atriiapps.quranpakinurdu.Utilities.pref_utils;
 import com.atriiapps.quranpakinurdu.Utilities.utils;
-import com.atriiapps.quranpakinurdu.databinding.RvSuraBinding;
 import com.atriiapps.quranpakinurdu.databinding.RvSuraViewerBinding;
 
 import java.util.ArrayList;
 
 public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.ViewHolder> {
 
-    ArrayList<TestModel> list;
+    ArrayList<SuraModel> list;
     Context context;
 
     String bismillah = "بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ";
 
-    public SuraViewerAdapter(ArrayList<TestModel> list, Context context) {
+    public SuraViewerAdapter(ArrayList<SuraModel> list, Context context) {
         this.list = list;
         this.context = context;
     }
@@ -40,7 +37,7 @@ public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull SuraViewerAdapter.ViewHolder holder, int position) {
-        TestModel model = list.get(position);
+        SuraModel model = list.get(position);
 
         RvSuraViewerBinding binding = holder.binding;
 

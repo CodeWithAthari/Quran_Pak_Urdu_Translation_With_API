@@ -1,6 +1,6 @@
 package com.atriiapps.quranpakinurdu.Models;
 
-public class TestModel {
+public class SuraModel {
 
     int arabicIndex,arabicSura,arabicAya;
     String arabicText;
@@ -71,7 +71,7 @@ public class TestModel {
         this.urduText = urduText;
     }
 
-    public TestModel(int arabicIndex, int arabicSura, int arabicAya, String arabicText, int urduIndex, int urduSura, int urduAya, String urduText) {
+    public SuraModel(int arabicIndex, int arabicSura, int arabicAya, String arabicText, int urduIndex, int urduSura, int urduAya, String urduText) {
         this.arabicIndex = arabicIndex;
         this.arabicSura = arabicSura;
         this.arabicAya = arabicAya;

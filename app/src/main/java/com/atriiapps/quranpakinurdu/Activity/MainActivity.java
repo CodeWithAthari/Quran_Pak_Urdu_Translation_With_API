@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
                     cacheEntry.responseHeaders = response.headers;
                     final String jsonString = new String(response.data,
                             HttpHeaderParser.parseCharset(response.headers));
-                    return Response.success(new String(jsonString), cacheEntry);
+                    return Response.success(jsonString, cacheEntry);
                 } catch (Exception e) {
                     return Response.error(new ParseError(e));
                 }

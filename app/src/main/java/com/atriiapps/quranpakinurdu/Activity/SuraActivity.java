@@ -25,7 +25,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.atriiapps.quranpakinurdu.Adapters.SuraViewerAdapter;
 import com.atriiapps.quranpakinurdu.Models.ArabicModel;
-import com.atriiapps.quranpakinurdu.Models.TestModel;
+import com.atriiapps.quranpakinurdu.Models.SuraModel;
 import com.atriiapps.quranpakinurdu.Models.UrduModel;
 import com.atriiapps.quranpakinurdu.R;
 import com.atriiapps.quranpakinurdu.Utilities.Constants;
@@ -50,14 +50,14 @@ public class SuraActivity extends AppCompatActivity {
     SuraActivity activity = this;
 
     SuraViewerAdapter adapter;
-    ArrayList<TestModel> list = new ArrayList<>();
+    ArrayList<SuraModel> list = new ArrayList<>();
 
     String sura_no, sura_name, sura_arabic_name;
     ArrayList<ArabicModel> arabicList = new ArrayList<>();
     ArrayList<UrduModel> urduList = new ArrayList<>();
 
     int lastAya, lastSura, aya_no;
-    Constants Constants  = new Constants();
+    Constants Constants = new Constants();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +75,7 @@ public class SuraActivity extends AppCompatActivity {
 
         if (sura_name == null) {
             getSuraName();
-utils.setToast(activity,"Searching Verse "+aya_no);
+            utils.setToast(activity, "Searching Verse " + aya_no);
         }
 
         pref_utils.put_Pref_String(activity, "last_sura_arabic_name", sura_arabic_name);
@@ -137,7 +137,6 @@ utils.setToast(activity,"Searching Verse "+aya_no);
         binding.mSuraViewerRV.setAdapter(adapter);
 
 
-
         fetchingSura();
 
 
@@ -146,7 +145,7 @@ utils.setToast(activity,"Searching Verse "+aya_no);
     private void lastRead() {
 
 
-        lastAya = pref_utils.get_Pref_Int(activity, "last_aya", 1) ;
+        lastAya = pref_utils.get_Pref_Int(activity, "last_aya", 1);
         lastSura = pref_utils.get_Pref_Int(activity, "last_sura", 1);
 
         if (aya_no > 3) {
@@ -156,10 +155,10 @@ utils.setToast(activity,"Searching Verse "+aya_no);
 
         if (lastAya > 3 && lastSura == VariableUtils.CurrentSura) {
             new Handler().postDelayed(() -> {
-                if(lastAya > list.size()){
-                    utils.setToast(activity,"Unknown Verse");
+                if (lastAya > list.size()) {
+                    utils.setToast(activity, "Unknown Verse");
                 }
-              binding.mSuraViewerRV.scrollToPosition(lastAya-1);
+                binding.mSuraViewerRV.scrollToPosition(lastAya - 1);
 
 
             }, 500);
@@ -168,19 +167,20 @@ utils.setToast(activity,"Searching Verse "+aya_no);
     }
 
 
-
     private void getCurrentQuranVersion() {
         Constants.QURAN_TRANSLATION_VERSION = pref_utils.get_Pref_String(activity, "quran_version", Constants.DEFAULT_QURAN_TRANSLATION_VERSION_SHARED_PREF);
 //        utils.setToast(activity, Constants.QURAN_TRANSLATION_VERSION);
     }
+
     @SuppressLint("SetTextI18n")
     private void fetchingSura() {
-getCurrentQuranVersion();
+        getCurrentQuranVersion();
         binding.mLoading.setText("Loading...");
 
         utils.setAnim(R.anim.fade, binding.mLoading, activity);
 
-        @SuppressLint("NotifyDataSetChanged") StringRequest request = new StringRequest(Request.Method.GET, Constants.WEBSITE_BASE_URL +"?v="+Constants.QURAN_TRANSLATION_VERSION+"&q=get_sura&sura_no=" + sura_no, response -> {
+        @SuppressLint("NotifyDataSetChanged")
+        StringRequest request = new StringRequest(Request.Method.GET, Constants.WEBSITE_BASE_URL + "?v=" + Constants.QURAN_TRANSLATION_VERSION + "&q=get_sura&sura_no=" + sura_no, response -> {
 
             try {
 //                utils.setToast(activity, Constants.WEBSITE_BASE_URL +"?v="+Constants.QURAN_TRANSLATION_VERSION+"&q=get_sura&sura_no=" + sura_no);
@@ -215,14 +215,14 @@ getCurrentQuranVersion();
                     urduList.add(model);
                 }
 
-                lastRead();
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
 
             for (int i = 0; i < arabicList.size(); i++) {
-                TestModel model = new TestModel(arabicList.get(i).getIndex(), arabicList.get(i).getSura(), arabicList.get(i).getAya(), arabicList.get(i).getText(), urduList.get(i).getIndex(), urduList.get(i).getSura(), urduList.get(i).getAya(), urduList.get(i).getText());
+                SuraModel model = new SuraModel(arabicList.get(i).getIndex(), arabicList.get(i).getSura(), arabicList.get(i).getAya(), arabicList.get(i).getText(), urduList.get(i).getIndex(), urduList.get(i).getSura(), urduList.get(i).getAya(), urduList.get(i).getText());
                 list.add(model);
             }
 
@@ -230,7 +230,7 @@ getCurrentQuranVersion();
             binding.mLoading.setVisibility(View.GONE);
 
             adapter.notifyDataSetChanged();
-
+            lastRead();
 
         }, error -> new Handler().postDelayed(() -> {
             if (list.size() == 0) {

@@ -57,11 +57,11 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void translationType() {
-        int selectedItem = pref_utils.get_Pref_Int(activity, "quran_version_id", binding.mQuranVersion.getSelectedItemPosition());
+        int selectedItem = pref_utils.get_Pref_Int(activity, "quran_version_id", 0);
 
         ArrayAdapter ad = new ArrayAdapter(
                 this,
-                R.layout.spinner_item,
+                R.layout.spinner_item,R.id.textView,
                 types);
 
         ad.setDropDownViewResource(
