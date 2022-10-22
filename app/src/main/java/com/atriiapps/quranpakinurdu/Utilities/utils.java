@@ -1,5 +1,6 @@
 package com.atriiapps.quranpakinurdu.Utilities;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
@@ -13,6 +14,13 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.textview.MaterialTextView;
+
+import java.text.DateFormatSymbols;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class utils {
 
@@ -70,6 +78,32 @@ public class utils {
 
     }
 
+
+    public static String getCurrentDate(){
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => " + c);
+
+        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        String formattedDate = df.format(c);
+
+        return formattedDate;
+    }
+
+
+    public static String getCurrentDay(){
+        @SuppressLint("SimpleDateFormat")
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+        Date d = new Date();
+        String dayOfTheWeek = sdf.format(d);
+        return dayOfTheWeek;
+    }
+    public static String getCurrentMonth(){
+        @SuppressLint("SimpleDateFormat")
+        Calendar cal=Calendar.getInstance();
+        SimpleDateFormat month_date = new SimpleDateFormat("MMMM");
+        String month_name = month_date.format(cal.getTime());
+        return month_name;
+    }
 
 
 

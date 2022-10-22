@@ -14,4 +14,7 @@
 
     <color name="text_2">#BCBCBC</color>
     <color name="text_3">#808080</color>
+
+
+    <color name="anim_gradient">#365378</color>
 </resources>

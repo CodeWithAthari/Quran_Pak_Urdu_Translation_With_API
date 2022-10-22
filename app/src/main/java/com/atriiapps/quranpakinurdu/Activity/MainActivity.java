@@ -1,5 +1,7 @@
 package com.atriiapps.quranpakinurdu.Activity;
 
+import android.animation.AnimatorInflater;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,6 +33,7 @@ import com.atriiapps.quranpakinurdu.Adapters.SuraMetaAdapter;
 import com.atriiapps.quranpakinurdu.Models.SuraMeta;
 import com.atriiapps.quranpakinurdu.R;
 import com.atriiapps.quranpakinurdu.Utilities.Constants;
+import com.atriiapps.quranpakinurdu.Utilities.ExternalConstants;
 import com.atriiapps.quranpakinurdu.Utilities.pref_utils;
 import com.atriiapps.quranpakinurdu.Utilities.utils;
 import com.atriiapps.quranpakinurdu.databinding.ActivityMainBinding;
@@ -56,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
 
     Constants Constants = new Constants();
 
+    String currentDate = utils.getCurrentDate();
+    String currentDay = utils.getCurrentDay();
+    String currentMonth = utils.getCurrentMonth();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
         lastAyaRead();
         initRv();
         binding.textField.setClickable(false);
+
+
+        getHijriDate();
 
 
         utils.setAnimWait(R.anim.fade_in, binding.textField, 0, activity);
@@ -94,6 +105,113 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    private void getHijriDate() {
+
+        updateDateInUI(false);
+
+
+        String url = ExternalConstants.GREGORIAN_TO_HIJRI + currentDate;
+        StringRequest request = new StringRequest(Request.Method.GET, url,
+                response -> {
+
+                    try {
+                        JSONObject object = new JSONObject(response);
+
+                        int statusCode = object.getInt("code");
+
+                        if (statusCode != 200) {
+                            return;
+                        }
+
+                        JSONObject dataObj = object.getJSONObject("data");
+                        JSONObject hijriObj = dataObj.getJSONObject("hijri");
+                        currentDate = hijriObj.getString("date");
+                        currentDay = hijriObj.getJSONObject("weekday").getString("en");
+                        currentMonth = hijriObj.getJSONObject("month").getString("en");
+
+                        updateDateInUI(true);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+
+
+                    }
+
+
+                }, error -> {
+
+            utils.log("error", error.toString());
+
+            new Handler().postDelayed(this::getHijriDate, 10000);
+
+        }) {
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                try {
+                    Cache.Entry cacheEntry = HttpHeaderParser.parseCacheHeaders(response);
+                    if (cacheEntry == null) {
+                        cacheEntry = new Cache.Entry();
+                    }
+                    final long cacheHitButRefreshed = 3 * 60 * 1000; // in 3 minutes cache will be hit, but also refreshed on background
+                    final long cacheExpired = 24 * 60 * 60 * 1000; // in 24 hours this cache entry expires completely
+                    long now = System.currentTimeMillis();
+                    final long softExpire = now + cacheHitButRefreshed;
+                    final long ttl = now + cacheExpired;
+                    cacheEntry.data = response.data;
+                    cacheEntry.softTtl = softExpire;
+                    cacheEntry.ttl = ttl;
+                    String headerValue;
+                    headerValue = response.headers.get("Date");
+                    if (headerValue != null) {
+                        cacheEntry.serverDate = HttpHeaderParser.parseDateAsEpoch(headerValue);
+                    }
+                    headerValue = response.headers.get("Last-Modified");
+                    if (headerValue != null) {
+                        cacheEntry.lastModified = HttpHeaderParser.parseDateAsEpoch(headerValue);
+                    }
+                    cacheEntry.responseHeaders = response.headers;
+                    final String jsonString = new String(response.data,
+                            HttpHeaderParser.parseCharset(response.headers));
+                    return Response.success(jsonString, cacheEntry);
+                } catch (Exception e) {
+                    return Response.error(new ParseError(e));
+                }
+            }
+
+
+            @Override
+            public void deliverError(VolleyError error) {
+                super.deliverError(error);
+            }
+
+            @Override
+            protected VolleyError parseNetworkError(VolleyError volleyError) {
+                return super.parseNetworkError(volleyError);
+            }
+        };
+        ;
+
+        RequestQueue queue = Volley.newRequestQueue(activity);
+        queue.add(request);
+
+
+    }
+
+    void updateDateInUI(Boolean isAnim) {
+
+        if (isAnim) {
+            utils.setAnimWait(R.anim.slide_from_bottom_date, binding.topHeader.mTodayDay, 0, activity);
+            utils.setAnimWait(R.anim.slide_from_bottom_date, binding.topHeader.mMonth, 200, activity);
+            utils.setAnimWait(R.anim.slide_from_bottom_date, binding.topHeader.mTodayDate, 300, activity);
+
+        }
+
+
+        binding.topHeader.mTodayDate.setText(currentDate);
+        binding.topHeader.mTodayDay.setText(currentDay);
+        binding.topHeader.mMonth.setText(currentMonth);
     }
 
     private void getCurrentQuranVersion() {
@@ -224,7 +342,6 @@ public class MainActivity extends AppCompatActivity {
 
 
                     new Handler().postDelayed(() -> gettingData(), 5000);
-                    utils.setToast(activity, "Error Again");
                 }
             }, 2000);
 

@@ -1,11 +1,13 @@
 package com.atriiapps.quranpakinurdu.Adapters;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.atriiapps.quranpakinurdu.Models.SuraModel;
@@ -75,11 +77,24 @@ public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.Vi
         }
 
 
-        binding.mUrduText.setText(model.getUrduText());
 
         binding.mMeta.setText(model.getArabicSura() + ":" + model.getArabicAya());
         if (position > 4) {
             utils.setAnimWait(R.anim.slide_from_bottom_fast, holder.itemView, 0, context);
+
+        }
+
+
+        if (model.getUrduText().matches(".*[a-z].*")) {
+            binding.mUrduText.setVisibility(View.GONE);
+            binding.mEngText.setVisibility(View.VISIBLE);
+            binding.mEngText.setText(model.getUrduText());
+
+        }
+        else{
+            binding.mUrduText.setTextAppearance(context, R.style.urduTranslation);
+            binding.mUrduText.setText(model.getUrduText());
+            binding.mEngText.setVisibility(View.GONE);
 
         }
 

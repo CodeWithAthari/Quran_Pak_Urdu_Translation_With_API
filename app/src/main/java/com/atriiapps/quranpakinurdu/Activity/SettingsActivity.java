@@ -22,9 +22,9 @@ public class SettingsActivity extends AppCompatActivity {
     SettingsActivity activity = this;
 
     String[] typesMeta = {"ur_maududi", "ur_qadri", "ur_kanzuliman", "ur_ahmedali", "ur_jalandhry",
-            "ur_jawadi", "ur_junagarhi", "ur_najafi"};
+            "ur_jawadi", "ur_junagarhi", "ur_najafi","en_maududi"};
     String[] types = {"ابوالاعلی مودودی", "طاہر القادری", "احمد رضا خان", "احمد علی", "جالندہری", "علامہ جوادی",
-            "محمد جوناگڑھی", "محمد حسین نجفی"};
+            "محمد جوناگڑھی", "محمد حسین نجفی","Abul  Ala  Maududi"};
     Constants Constants = new Constants();
     boolean doubleBackToExitPressedOnce = false;
     boolean isHideStatusBar = true;
@@ -85,6 +85,8 @@ public class SettingsActivity extends AppCompatActivity {
         ad.setDropDownViewResource(
                 R.layout
                         .spinner_item);
+
+
 
 
         binding.mQuranVersion.setAdapter(ad);

@@ -263,7 +263,6 @@ public class SuraActivity extends AppCompatActivity {
 
 
                 new Handler().postDelayed(this::fetchingSura, 5000);
-                utils.setToast(activity, "Error Again");
             }
         }, 2000)) {
             @Override
