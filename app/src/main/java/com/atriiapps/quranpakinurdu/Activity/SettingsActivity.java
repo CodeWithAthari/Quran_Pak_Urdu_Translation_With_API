@@ -21,12 +21,13 @@ public class SettingsActivity extends AppCompatActivity {
     ActivitySettingsBinding binding;
     SettingsActivity activity = this;
 
-    String[] typesMeta = {"ur_maududi", "ur_qadri","ur_kanzuliman","ur_ahmedali","ur_jalandhry",
-    "ur_jawadi","ur_junagarhi","ur_najafi"};
-    String[] types = {"ابوالاعلی مودودی", "طاہر القادری","احمد رضا خان","احمد علی","جالندہری","علامہ جوادی",
-            "محمد جوناگڑھی","محمد حسین نجفی"};
+    String[] typesMeta = {"ur_maududi", "ur_qadri", "ur_kanzuliman", "ur_ahmedali", "ur_jalandhry",
+            "ur_jawadi", "ur_junagarhi", "ur_najafi"};
+    String[] types = {"ابوالاعلی مودودی", "طاہر القادری", "احمد رضا خان", "احمد علی", "جالندہری", "علامہ جوادی",
+            "محمد جوناگڑھی", "محمد حسین نجفی"};
     Constants Constants = new Constants();
     boolean doubleBackToExitPressedOnce = false;
+    boolean isHideStatusBar = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +52,23 @@ public class SettingsActivity extends AppCompatActivity {
             utils.setToast(activity, "Saved ");
             finishAffinity();
             startActivity(new Intent(activity, MainActivity.class));
+            pref_utils.put_Pref_Boolean(activity, "hide_status_bar", isHideStatusBar);
+
+
+        });
+
+        hidestatus();
+
+    }
+
+    private void hidestatus() {
+        isHideStatusBar = pref_utils.get_Pref_Boolean(activity, "hide_status_bar", true);
+
+        binding.hideStatusCheck.setChecked(isHideStatusBar);
+
+        binding.hideStatus.setOnClickListener(view -> {
+            isHideStatusBar = !isHideStatusBar;
+            binding.hideStatusCheck.setChecked(isHideStatusBar);
 
         });
 
@@ -61,7 +79,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         ArrayAdapter ad = new ArrayAdapter(
                 this,
-                R.layout.spinner_item,R.id.textView,
+                R.layout.spinner_item, R.id.textView,
                 types);
 
         ad.setDropDownViewResource(
@@ -77,7 +95,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        utils.setToast(activity,"Your Changes are not Saved");
+        utils.setToast(activity, "Your Changes are not Saved");
 
         super.onBackPressed();
     }

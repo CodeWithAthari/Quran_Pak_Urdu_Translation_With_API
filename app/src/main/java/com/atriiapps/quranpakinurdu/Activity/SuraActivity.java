@@ -1,6 +1,9 @@
 package com.atriiapps.quranpakinurdu.Activity;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -8,10 +11,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
@@ -63,16 +68,20 @@ public class SuraActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySurahBinding.inflate(getLayoutInflater());
+        pref_utils.PREF_INIT(activity);
+        getStatusBarSettings();
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar.mToolbar);
-        pref_utils.PREF_INIT(activity);
         Constants.updateConstants();
         sura_no = getIntent().getStringExtra("sura_no");
         aya_no = getIntent().getIntExtra("aya_no", 1);
         sura_name = getIntent().getStringExtra("sura_name");
         sura_arabic_name = getIntent().getStringExtra("sura_arabic_name");
-
-
+        final Drawable upArrow = getResources().getDrawable(R.drawable.ic_baseline_arrow_back_ios_24);
+        upArrow.setColorFilter(Color.parseColor("#FFFFFF"), PorterDuff.Mode.SRC_ATOP);
+        Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(upArrow);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        binding.toolbar.mToolbarText.setText(sura_name);
         if (sura_name == null) {
             getSuraName();
             utils.setToast(activity, "Searching Verse " + aya_no);
@@ -88,7 +97,21 @@ public class SuraActivity extends AppCompatActivity {
 
     }
 
+    private void getStatusBarSettings() {
+
+        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity,"hide_status_bar",true);
+        if(isHideStatusBar)
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        else
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+
+
+    }
+
     private void getSuraName() {
+        binding.toolbar.mToolbarText.setText(getString(R.string.app_name));
+
         StringRequest request = new StringRequest(Request.Method.GET, Constants.GET_SURA_META_ONE + sura_no,
 
                 response -> {
@@ -113,6 +136,7 @@ public class SuraActivity extends AppCompatActivity {
                         VariableUtils.CurrentSura = Integer.parseInt(sura_no);
                         pref_utils.put_Pref_String(activity, "last_sura_arabic_name", sura_arabic_name);
                         pref_utils.put_Pref_String(activity, "last_sura_eng_name", sura_name);
+                        binding.toolbar.mToolbarText.setText(sura_name);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -231,6 +255,7 @@ public class SuraActivity extends AppCompatActivity {
 
             adapter.notifyDataSetChanged();
             lastRead();
+            onScroll();
 
         }, error -> new Handler().postDelayed(() -> {
             if (list.size() == 0) {
@@ -294,6 +319,34 @@ public class SuraActivity extends AppCompatActivity {
 
     }
 
+    private void onScroll() {
+
+        final int[] state = new int[1];
+
+        binding.mSuraViewerRV.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                state[0] = newState;
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (dy > 0 && (state[0] == 0 || state[0] == 2)) {
+                    binding.toolbarLinearHolder.setVisibility(View.GONE);
+                } else if (dy < -10) {
+                    binding.toolbarLinearHolder.setVisibility(View.VISIBLE);
+
+                }
+
+
+            }
+        });
+
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -347,6 +400,13 @@ public class SuraActivity extends AppCompatActivity {
         dialogBuilder.show();
 
 
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+
+        finish();
+        return true;
     }
 }
 

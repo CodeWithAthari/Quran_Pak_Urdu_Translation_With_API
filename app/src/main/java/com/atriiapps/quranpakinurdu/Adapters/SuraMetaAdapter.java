@@ -49,6 +49,8 @@ public class SuraMetaAdapter extends RecyclerView.Adapter<SuraMetaAdapter.ViewHo
         binding.mMetaMeaning.setText(model.getEname());
         binding.mMetaEng.setText(model.getTname());
         binding.mMetaType.setText(model.getType());
+        binding.mSuraNumber.setText(model.getId());
+
 
         binding.rvSuraMetaClicker.setOnClickListener(view -> {
 
