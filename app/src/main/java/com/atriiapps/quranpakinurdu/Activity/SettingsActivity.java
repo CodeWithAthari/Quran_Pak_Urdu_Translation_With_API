@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
@@ -28,10 +29,12 @@ public class SettingsActivity extends AppCompatActivity {
     Constants Constants = new Constants();
     boolean doubleBackToExitPressedOnce = false;
     boolean isHideStatusBar = true;
-
+    boolean hideStatusBar = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pref_utils.PREF_INIT(activity);
+        getDefaultStatusBarSettings();
         binding = ActivitySettingsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         pref_utils.PREF_INIT(activity);
@@ -40,7 +43,27 @@ public class SettingsActivity extends AppCompatActivity {
 
 
     }
+    private void getDefaultStatusBarSettings() {
 
+        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity,"hide_status_bar",true);
+        if(isHideStatusBar)
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        else
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+
+
+    }
+    private void getUpdatedStatusBarSettings() {
+
+        if(hideStatusBar)
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        else
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+
+
+    }
     private void functions() {
         translationType();
 
@@ -57,18 +80,21 @@ public class SettingsActivity extends AppCompatActivity {
 
         });
 
-        hidestatus();
+        hideStatus();
 
     }
 
-    private void hidestatus() {
+    private void hideStatus() {
         isHideStatusBar = pref_utils.get_Pref_Boolean(activity, "hide_status_bar", true);
+        hideStatusBar = pref_utils.get_Pref_Boolean(activity, "hide_status_bar", true);
 
         binding.hideStatusCheck.setChecked(isHideStatusBar);
 
         binding.hideStatus.setOnClickListener(view -> {
             isHideStatusBar = !isHideStatusBar;
             binding.hideStatusCheck.setChecked(isHideStatusBar);
+            hideStatusBar =!hideStatusBar;
+            getUpdatedStatusBarSettings();
 
         });
 

@@ -1,19 +1,16 @@
 package com.atriiapps.quranpakinurdu.Activity;
 
-import android.animation.AnimatorInflater;
-import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -68,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        pref_utils.PREF_INIT(activity);
+        getStatusBarSettings();
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar.mToolbar);
         pref_utils.PREF_INIT(activity);
@@ -135,10 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-
-
                     }
-//Hello
 
                 }, error -> {
 
@@ -523,6 +519,18 @@ public class MainActivity extends AppCompatActivity {
         } else {
             return false;
         }
+
+
+    }
+
+    private void getStatusBarSettings() {
+
+        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity,"hide_status_bar",true);
+        if(isHideStatusBar)
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        else
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
 
 
     }
