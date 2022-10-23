@@ -1,6 +1,9 @@
 package com.atriiapps.quranpakinurdu.Activity;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -27,8 +30,10 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.atriiapps.quranpakinurdu.Adapters.SuraMetaAdapter;
+import com.atriiapps.quranpakinurdu.BuildConfig;
 import com.atriiapps.quranpakinurdu.Models.SuraMeta;
 import com.atriiapps.quranpakinurdu.R;
+import com.atriiapps.quranpakinurdu.Services.NotificationReciever;
 import com.atriiapps.quranpakinurdu.Utilities.Constants;
 import com.atriiapps.quranpakinurdu.Utilities.ExternalConstants;
 import com.atriiapps.quranpakinurdu.Utilities.pref_utils;
@@ -60,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
     String currentDay = utils.getCurrentDay();
     String currentMonth = utils.getCurrentMonth();
 
+    Boolean isEditTextFocus = false;
+    Boolean isFromBroadcast = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,10 +81,13 @@ public class MainActivity extends AppCompatActivity {
         lastAyaRead();
         initRv();
         binding.textField.setClickable(false);
-
-
         getHijriDate();
+        checkForUpdate();
 
+
+        if (!isFromBroadcast) {
+            startServices();
+        }
 
         utils.setAnimWait(R.anim.fade_in, binding.textField, 0, activity);
 
@@ -93,7 +103,10 @@ public class MainActivity extends AppCompatActivity {
                 if (!binding.textFF.getText().toString().matches("")) {
 
                     filter(binding.textFF.getText().toString());
+
+
                 }
+
 
             }
 
@@ -102,6 +115,84 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        binding.mNestedScroll.setSmoothScrollingEnabled(true);
+
+        binding.textFF.setOnFocusChangeListener((view, isFocus) -> {
+            isEditTextFocus = isFocus;
+            int scrollY = binding.mNestedScroll.getScrollY();
+            if (isFocus) {
+                if (scrollY < 500) {
+
+                    binding.mNestedScroll.smoothScrollTo(binding.mNestedScroll.getScrollX(), binding.mNestedScroll.getScrollY() + 1000);
+                }
+            }
+
+        });
+
+
+    }
+
+
+
+    private void startServices() {
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent intent = new Intent(activity, NotificationReciever.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 10, intent, 0);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + ExternalConstants.NotificationDelay, pendingIntent);
+
+
+    }
+
+    private void checkForUpdate() {
+        binding.updateContainer.setVisibility(View.GONE);
+
+        StringRequest request = new StringRequest(Request.Method.GET, Constants.CHECK_4_UPDATE,
+                response -> {
+
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        String status = object.getString("status");
+
+                        if (!status.equalsIgnoreCase("Success")) {
+                            utils.setToast(activity, object.getString("message"));
+                            return;
+                        }
+
+                        String myVersion = BuildConfig.VERSION_NAME;
+                        String apiVersion = object.getString("currentversion");
+                        utils.log("version", myVersion + "\n" + apiVersion);
+
+                        if (!apiVersion.matches(myVersion)) {
+                            binding.updateContainer.setVisibility(View.VISIBLE);
+                            utils.setAnimWait(R.anim.fade_in, binding.updateContainer, 0, activity);
+                            binding.mUpdateApp.materialButton.setOnClickListener(view -> {
+                                Intent ii = null;
+                                try {
+                                    ii = new Intent(Intent.ACTION_VIEW, Uri.parse(object.getString("link")));
+                                    startActivity(ii);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                            });
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }, error -> {
+
+            utils.log("error", error.toString());
+
+            new Handler().postDelayed(this::checkForUpdate, 10000);
+
+        });
+
+        RequestQueue queue = Volley.newRequestQueue(activity);
+        queue.add(request);
 
 
     }
@@ -243,6 +334,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         getCurrentQuranVersion();
         utils.setAnimWait(R.anim.fade_in, binding.mSuraRv, 0, activity);
+        utils.setAnimWait(R.anim.fade_in, binding.mTopHeaderHolder, 0, activity);
+        utils.setAnimWait(R.anim.fade_in, binding.mLastReadHolder, 0, activity);
         utils.setAnimWait(R.anim.fade_in, binding.textField, 0, activity);
         binding.textFF.setText("");
         binding.textFF.clearFocus();
@@ -452,9 +545,13 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            String sura = text.split(":")[0];
-            String aya = text.split(":")[1];
+            String sura = text.split(":")[0].replace(":", "");
+            String aya = text.split(":")[1].replace(":", "");
+            utils.log("find", sura + "\n" + aya);
 
+            if (aya.matches("")) {
+                aya = "1";
+            }
             Intent intent = new Intent();
             intent.putExtra("sura_no", sura);
             intent.putExtra("aya_no", Integer.parseInt(aya));
@@ -525,13 +622,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void getStatusBarSettings() {
 
-        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity,"hide_status_bar",true);
-        if(isHideStatusBar)
+        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity, "hide_status_bar", true);
+        if (isHideStatusBar)
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else
             activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
+    }
 
+    @Override
+    public void onBackPressed() {
+        if (isEditTextFocus) {
+            binding.textFF.clearFocus();
+        } else {
+            finish();
+        }
     }
 }

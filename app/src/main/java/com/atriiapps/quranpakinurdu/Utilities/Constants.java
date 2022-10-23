@@ -18,10 +18,18 @@ public class Constants {
     public final String DEFAULT_QURAN_TRANSLATION_VERSION_SHARED_PREF = "ur_maududi";
 
 
-   public void updateConstants() {
-       BASE_URL = WEBSITE_BASE_URL + "?v=" + QURAN_TRANSLATION_VERSION + "&q=";
+    public void updateConstants() {
+        BASE_URL = WEBSITE_BASE_URL + "?v=" + QURAN_TRANSLATION_VERSION + "&q=";
         GET_SURA = BASE_URL + "get_sura&sura_no=";
     }
+
+//    Other APIs
+
+    public String CHECK_4_UPDATE = "https://atharapps.com/quran/update.php";
+
+//Other
+public String today_Aya = " ";
+
 
 
 }

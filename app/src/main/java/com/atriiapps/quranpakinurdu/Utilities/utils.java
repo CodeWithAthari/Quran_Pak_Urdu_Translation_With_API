@@ -1,11 +1,16 @@
 package com.atriiapps.quranpakinurdu.Utilities;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +18,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.atriiapps.quranpakinurdu.R;
+import com.atriiapps.quranpakinurdu.databinding.ToastLayoutBinding;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.text.DateFormatSymbols;
@@ -25,13 +32,13 @@ import java.util.Locale;
 public class utils {
 
 
-    public static void replaceFragment (Context context , Fragment fragment){
+    public static void replaceFragment(Context context, Fragment fragment) {
         String backStateName = fragment.getClass().getName();
 
-        FragmentManager manager = ((AppCompatActivity)context). getSupportFragmentManager();
-        boolean fragmentPopped = manager.popBackStackImmediate (backStateName, 0);
+        FragmentManager manager = ((AppCompatActivity) context).getSupportFragmentManager();
+        boolean fragmentPopped = manager.popBackStackImmediate(backStateName, 0);
 
-        if (!fragmentPopped){ //fragment not in back stack, create it.
+        if (!fragmentPopped) { //fragment not in back stack, create it.
             FragmentTransaction ft = manager.beginTransaction();
 //            ft.replace(R.id.fragmentContainerView, fragment);
             ft.addToBackStack(backStateName);
@@ -40,21 +47,19 @@ public class utils {
     }
 
 
-
-    public static void setToast(Context context,String msg){
-        if(msg!=null){
+    public static void setToast(Context context, String msg) {
+        if (msg != null) {
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-        }
-        else{
+        } else {
             Toast.makeText(context, "Message is Null", Toast.LENGTH_SHORT).show();
         }
 
 
-
     }
-    public static void log(String tag, String msg){
 
-        Log.d(tag,msg);
+    public static void log(String tag, String msg) {
+
+        Log.d(tag, msg);
 
 
     }
@@ -63,6 +68,7 @@ public class utils {
     public static void setAnim(int id, MaterialTextView view, Context context) {
         view.startAnimation(AnimationUtils.loadAnimation(context, id));
     }
+
     public static void setAnimWait(int id, View view, int Delay, Context context) {
         try {
             view.setVisibility(View.INVISIBLE);
@@ -79,7 +85,7 @@ public class utils {
     }
 
 
-    public static String getCurrentDate(){
+    public static String getCurrentDate() {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c);
 
@@ -90,24 +96,21 @@ public class utils {
     }
 
 
-    public static String getCurrentDay(){
+    public static String getCurrentDay() {
         @SuppressLint("SimpleDateFormat")
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
         String dayOfTheWeek = sdf.format(d);
         return dayOfTheWeek;
     }
-    public static String getCurrentMonth(){
+
+    public static String getCurrentMonth() {
         @SuppressLint("SimpleDateFormat")
-        Calendar cal=Calendar.getInstance();
+        Calendar cal = Calendar.getInstance();
         SimpleDateFormat month_date = new SimpleDateFormat("MMMM");
         String month_name = month_date.format(cal.getTime());
         return month_name;
     }
-
-
-
-
 
 
 }

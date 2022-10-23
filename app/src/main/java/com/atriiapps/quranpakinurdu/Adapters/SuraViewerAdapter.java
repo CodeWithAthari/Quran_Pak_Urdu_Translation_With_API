@@ -2,6 +2,7 @@ package com.atriiapps.quranpakinurdu.Adapters;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.Vi
 
     ArrayList<SuraModel> list;
     Context context;
+    String textStyle = pref_utils.get_Pref_String(context,"text_style","Right");
 
     String bismillah = "بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ";
 
@@ -95,6 +97,29 @@ public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.Vi
             binding.mUrduText.setTextAppearance(context, R.style.urduTranslation);
             binding.mUrduText.setText(model.getUrduText());
             binding.mEngText.setVisibility(View.GONE);
+
+        }
+
+
+        switch (textStyle){
+            case "Left":
+                binding.mEngText.setGravity(Gravity.START);
+                binding.mArabicText.setGravity(Gravity.START);
+                binding.mUrduText.setGravity(Gravity.START);
+                break;
+            case "Center":
+                binding.mEngText.setGravity(Gravity.CENTER);
+                binding.mArabicText.setGravity(Gravity.CENTER);
+                binding.mUrduText.setGravity(Gravity.CENTER);
+                break;
+
+            default:
+                if (!model.getUrduText().matches(".*[a-z].*") &&!textStyle.equalsIgnoreCase("Right")) {
+                    binding.mEngText.setGravity(Gravity.END);
+                    binding.mArabicText.setGravity(Gravity.END);
+                    binding.mUrduText.setGravity(Gravity.END);
+                }
+
 
         }
 

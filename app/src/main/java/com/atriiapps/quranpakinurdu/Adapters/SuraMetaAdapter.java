@@ -62,10 +62,10 @@ public class SuraMetaAdapter extends RecyclerView.Adapter<SuraMetaAdapter.ViewHo
 
         });
 
-        if(position >4){
-            utils.setAnimWait(R.anim.slide_from_bottom_fast,holder.itemView,0,context);
 
-        }
+//            utils.setAnimWait(R.anim.fade_in,binding.mCard,0,context);
+
+
     }
 
     @Override

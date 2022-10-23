@@ -15,7 +15,6 @@
         android:theme="@style/Theme.QuranPak"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-
         <activity
             android:name=".Activity.SettingsActivity"
             android:exported="false">
@@ -43,6 +42,8 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
+        <receiver android:name=".Services.NotificationReciever" />
     </application>
 
 </manifest>

@@ -173,7 +173,8 @@ public class SuraActivity extends AppCompatActivity {
         lastSura = pref_utils.get_Pref_Int(activity, "last_sura", 1);
 
         if (aya_no > 3) {
-            lastAya = aya_no;
+            scrollToFindingAya();
+            return;
         }
 
 
@@ -188,6 +189,14 @@ public class SuraActivity extends AppCompatActivity {
             }, 500);
         }
 //
+    }
+
+    private void scrollToFindingAya() {
+        if (aya_no > list.size()) {
+            utils.setToast(activity, "Unknown Verse");
+        }
+        binding.mSuraViewerRV.scrollToPosition(aya_no - 1);
+
     }
 
 
@@ -381,6 +390,10 @@ public class SuraActivity extends AppCompatActivity {
         editText.setHint("Enter Aya No, " + list.size());
         if (lastAya > 3) {
             editText.setText(String.valueOf(lastAya));
+
+        }
+        if (aya_no > 3) {
+            editText.setText(String.valueOf(aya_no));
 
         }
 

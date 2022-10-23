@@ -23,13 +23,16 @@ public class SettingsActivity extends AppCompatActivity {
     SettingsActivity activity = this;
 
     String[] typesMeta = {"ur_maududi", "ur_qadri", "ur_kanzuliman", "ur_ahmedali", "ur_jalandhry",
-            "ur_jawadi", "ur_junagarhi", "ur_najafi","en_maududi"};
+            "ur_jawadi", "ur_junagarhi", "ur_najafi", "en_maududi"};
     String[] types = {"ابوالاعلی مودودی", "طاہر القادری", "احمد رضا خان", "احمد علی", "جالندہری", "علامہ جوادی",
-            "محمد جوناگڑھی", "محمد حسین نجفی","Abul  Ala  Maududi"};
+            "محمد جوناگڑھی", "محمد حسین نجفی", "Abul  Ala  Maududi"};
+    String[] options = {"Left", "Center", "Right"};
+
     Constants Constants = new Constants();
     boolean doubleBackToExitPressedOnce = false;
     boolean isHideStatusBar = true;
     boolean hideStatusBar = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,27 +46,28 @@ public class SettingsActivity extends AppCompatActivity {
 
 
     }
+
     private void getDefaultStatusBarSettings() {
 
-        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity,"hide_status_bar",true);
-        if(isHideStatusBar)
+        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity, "hide_status_bar", true);
+        if (isHideStatusBar)
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else
             activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
-
     }
+
     private void getUpdatedStatusBarSettings() {
 
-        if(hideStatusBar)
+        if (hideStatusBar)
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else
             activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
-
     }
+
     private void functions() {
         translationType();
 
@@ -72,7 +76,10 @@ public class SettingsActivity extends AppCompatActivity {
             pref_utils.put_Pref_String(activity, "quran_version", typesMeta[binding.mQuranVersion.getSelectedItemPosition()]);
             pref_utils.put_Pref_Int(activity, "quran_version_id", binding.mQuranVersion.getSelectedItemPosition());
 
-            utils.setToast(activity, "Saved ");
+            pref_utils.put_Pref_String(activity, "text_style", options[binding.mTextPos.getSelectedItemPosition()]);
+            pref_utils.put_Pref_Int(activity, "text_style_id", binding.mTextPos.getSelectedItemPosition());
+
+            utils.setToast(activity, "Saved");
             finishAffinity();
             startActivity(new Intent(activity, MainActivity.class));
             pref_utils.put_Pref_Boolean(activity, "hide_status_bar", isHideStatusBar);
@@ -81,6 +88,29 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         hideStatus();
+
+        textPos();
+
+
+    }
+
+
+    private void textPos() {
+        int selectedOption = pref_utils.get_Pref_Int(activity, "text_style_id", 2);
+
+        ArrayAdapter ad = new ArrayAdapter(
+                this,
+                R.layout.spinner_item, R.id.textView,
+                options);
+
+        ad.setDropDownViewResource(
+                R.layout
+                        .spinner_item);
+
+        binding.mTextPos.setAdapter(ad);
+
+        binding.mTextPos.setSelection(selectedOption);
+
 
     }
 
@@ -93,7 +123,7 @@ public class SettingsActivity extends AppCompatActivity {
         binding.hideStatus.setOnClickListener(view -> {
             isHideStatusBar = !isHideStatusBar;
             binding.hideStatusCheck.setChecked(isHideStatusBar);
-            hideStatusBar =!hideStatusBar;
+            hideStatusBar = !hideStatusBar;
             getUpdatedStatusBarSettings();
 
         });
@@ -111,8 +141,6 @@ public class SettingsActivity extends AppCompatActivity {
         ad.setDropDownViewResource(
                 R.layout
                         .spinner_item);
-
-
 
 
         binding.mQuranVersion.setAdapter(ad);
