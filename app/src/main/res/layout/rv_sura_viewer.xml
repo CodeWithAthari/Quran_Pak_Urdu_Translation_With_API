@@ -38,15 +38,16 @@
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/mArabicText"
                 android:layout_width="0dp"
+                android:textIsSelectable="true"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
                 android:fontFamily="@font/arabic"
-                android:gravity="end"
+                android:gravity="start"
                 android:text="@string/quran_verse_arabic"
                 android:textColor="@color/white"
-                android:textDirection="ltr"
+                android:textDirection="rtl"
                 android:textSize="30sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -56,6 +57,7 @@
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/mUrduText"
                 style="@style/urduTranslation"
+                android:textIsSelectable="true"
 
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -66,7 +68,7 @@
                 android:fontFamily="@font/urdu"
                 android:text="@string/quran_verse_urdu"
                 android:textColor="@color/white"
-                android:textDirection="ltr"
+                android:textDirection="rtl"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -77,6 +79,7 @@
                 android:id="@+id/mEngText"
                 style="@style/englishTranslation"
                 android:layout_width="0dp"
+                android:textIsSelectable="true"
 
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -99,6 +102,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:textIsSelectable="true"
+
                 android:fontFamily="@font/regular"
                 android:gravity="start"
                 android:text="1: 255"

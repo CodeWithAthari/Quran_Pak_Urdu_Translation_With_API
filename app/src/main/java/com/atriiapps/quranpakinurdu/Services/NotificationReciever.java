@@ -11,6 +11,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -31,22 +32,29 @@ public class NotificationReciever extends BroadcastReceiver {
     Intent iRecever;
     Constants Constants = new Constants();
 
+    Boolean isShowNotifications = true;
+
     @Override
     public void onReceive(Context context, Intent intent2) {
         mContext = context;
         iRecever = intent2;
-        utils.log("rec","running rec");
+        utils.log("rec", "running rec");
         pref_utils.PREF_INIT(context);
-againSet();
-        getData();
 
 
+        isShowNotifications = pref_utils.get_Pref_Boolean(context, "show_notifications", true);
+
+        if (isShowNotifications) {
+            againSet();
+            getData();
+
+        }
     }
 
     private void againSet() {
         AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(mContext, NotificationReciever.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 10, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 10, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + ExternalConstants.NotificationDelay, pendingIntent);
 
     }
@@ -83,8 +91,10 @@ againSet();
                 intent.putExtra("sura_no", sura);
                 intent.putExtra("aya_no", Integer.parseInt(aya));
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 
-                PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                }
+                PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
 
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

@@ -32,7 +32,7 @@ public class SettingsActivity extends AppCompatActivity {
     boolean doubleBackToExitPressedOnce = false;
     boolean isHideStatusBar = true;
     boolean hideStatusBar = true;
-
+    Boolean isShowNotifications = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +84,8 @@ public class SettingsActivity extends AppCompatActivity {
             startActivity(new Intent(activity, MainActivity.class));
             pref_utils.put_Pref_Boolean(activity, "hide_status_bar", isHideStatusBar);
 
+            pref_utils.put_Pref_Boolean(activity, "show_notifications", isShowNotifications);
+
 
         });
 
@@ -91,6 +93,23 @@ public class SettingsActivity extends AppCompatActivity {
 
         textPos();
 
+        notifications();
+
+
+    }
+
+    private void notifications() {
+        isShowNotifications  =   pref_utils.get_Pref_Boolean(activity, "show_notifications", true);
+
+      binding.mShowNotificationsCheck.setChecked(isShowNotifications);
+
+        binding.mShowNotifications.setOnClickListener(view -> {
+            isShowNotifications = !isShowNotifications;
+            binding.mShowNotificationsCheck.setChecked(isHideStatusBar);
+
+            binding.mShowNotificationsCheck.setChecked(isShowNotifications);
+
+        });
 
     }
 

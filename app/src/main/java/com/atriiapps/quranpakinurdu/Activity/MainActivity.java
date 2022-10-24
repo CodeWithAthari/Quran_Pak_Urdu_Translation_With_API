@@ -3,6 +3,8 @@ package com.atriiapps.quranpakinurdu.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -46,6 +48,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
@@ -67,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
 
     Boolean isEditTextFocus = false;
     Boolean isFromBroadcast = false;
+    Boolean isShowNotifications = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +88,12 @@ public class MainActivity extends AppCompatActivity {
         binding.textField.setClickable(false);
         getHijriDate();
         checkForUpdate();
-
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                test();
+            }
+        },2000);
 
         if (!isFromBroadcast) {
             startServices();
@@ -132,14 +142,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void test() {
+
+
+    }
 
 
     private void startServices() {
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        isShowNotifications  =   pref_utils.get_Pref_Boolean(activity, "show_notifications", true);
+if(isShowNotifications){
+    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(activity, NotificationReciever.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 10, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 10, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + ExternalConstants.NotificationDelay, pendingIntent);
+}
 
 
     }

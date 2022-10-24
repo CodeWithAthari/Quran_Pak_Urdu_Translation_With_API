@@ -7,6 +7,48 @@
     android:background="@color/purple_500"
     tools:context=".Activity.SettingsActivity">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/hideStatus"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/gradient"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toEndOf="@+id/mQuranVersion"
+        app:layout_constraintStart_toStartOf="@+id/mQuranVersion"
+        app:layout_constraintTop_toBottomOf="@+id/mTextPos">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="@font/bold"
+            android:text="Hide Status Bar"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/hideStatusCheck"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/hideStatusCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:clickable="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <include
         android:id="@+id/toolbar"
         layout="@layout/toolbar" />
@@ -42,7 +84,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hideStatus" />
+        app:layout_constraintTop_toBottomOf="@+id/mQuranVersion" />
 
     <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/mQuranVersion"
@@ -77,7 +119,7 @@
         tools:ignore="SpeakableTextPresentCheck" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/hideStatus"
+        android:id="@+id/mShowNotifications"
         android:layout_width="0dp"
         android:layout_height="60dp"
         android:layout_marginTop="16dp"
@@ -87,7 +129,7 @@
         android:foreground="?attr/selectableItemBackground"
         app:layout_constraintEnd_toEndOf="@+id/mQuranVersion"
         app:layout_constraintStart_toStartOf="@+id/mQuranVersion"
-        app:layout_constraintTop_toBottomOf="@+id/mQuranVersion">
+        app:layout_constraintTop_toBottomOf="@+id/hideStatus">
 
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="0dp"
@@ -97,17 +139,17 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/bold"
-            android:text="Hide Status Bar"
+            android:text="Notifications"
             android:textColor="@color/white"
             android:textSize="22sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/hideStatusCheck"
+            app:layout_constraintEnd_toStartOf="@+id/mShowNotificationsCheck"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
-            android:id="@+id/hideStatusCheck"
+            android:id="@+id/mShowNotificationsCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"

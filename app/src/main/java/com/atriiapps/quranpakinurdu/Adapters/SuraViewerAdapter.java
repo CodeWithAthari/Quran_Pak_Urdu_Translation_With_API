@@ -116,10 +116,9 @@ public class SuraViewerAdapter extends RecyclerView.Adapter<SuraViewerAdapter.Vi
             default:
                 if (!model.getUrduText().matches(".*[a-z].*") &&!textStyle.equalsIgnoreCase("Right")) {
                     binding.mEngText.setGravity(Gravity.END);
-                    binding.mArabicText.setGravity(Gravity.END);
-                    binding.mUrduText.setGravity(Gravity.END);
                 }
-
+                binding.mArabicText.setGravity(Gravity.START);
+                binding.mUrduText.setGravity(Gravity.START);
 
         }
 
