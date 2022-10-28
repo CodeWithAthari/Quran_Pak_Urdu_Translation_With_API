@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
@@ -50,6 +52,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 
@@ -69,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
     String currentMonth = utils.getCurrentMonth();
 
     Boolean isEditTextFocus = false;
-    Boolean isFromBroadcast = false;
     Boolean isShowNotifications = true;
+    int i = 0;
 
 
     @Override
@@ -81,23 +84,13 @@ public class MainActivity extends AppCompatActivity {
         getStatusBarSettings();
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar.mToolbar);
-        pref_utils.PREF_INIT(activity);
-        getCurrentQuranVersion();
         lastAyaRead();
-        initRv();
-        binding.textField.setClickable(false);
-        getHijriDate();
-        checkForUpdate();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                test();
-            }
-        },2000);
+        getCurrentQuranVersion();
+        startServices();
 
-        if (!isFromBroadcast) {
-            startServices();
-        }
+        binding.textField.setClickable(false);
+
+
 
         utils.setAnimWait(R.anim.fade_in, binding.textField, 0, activity);
 
@@ -110,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-                if (!binding.textFF.getText().toString().matches("")) {
+                if (!Objects.requireNonNull(binding.textFF.getText()).toString().matches("")) {
 
                     filter(binding.textFF.getText().toString());
 
@@ -139,23 +132,21 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-
-    }
-
-    private void test() {
-
+        initRv();
+        getHijriDate();
+        checkForUpdate();
 
     }
 
 
     private void startServices() {
-        isShowNotifications  =   pref_utils.get_Pref_Boolean(activity, "show_notifications", true);
-if(isShowNotifications){
-    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Intent intent = new Intent(activity, NotificationReciever.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 10, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + ExternalConstants.NotificationDelay, pendingIntent);
-}
+        isShowNotifications = pref_utils.get_Pref_Boolean(activity, "show_notifications", true);
+        if (isShowNotifications) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            Intent intent = new Intent(activity, NotificationReciever.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 10, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + ExternalConstants.NotificationDelay, pendingIntent);
+        }
 
 
     }
@@ -177,7 +168,12 @@ if(isShowNotifications){
 
                         String myVersion = BuildConfig.VERSION_NAME;
                         String apiVersion = object.getString("currentversion");
+                        String scroll = object.getString("scroll");
                         utils.log("version", myVersion + "\n" + apiVersion);
+
+                        if (scroll.matches("true")) {
+                            onScroll();
+                        }
 
                         if (!apiVersion.matches(myVersion)) {
                             binding.updateContainer.setVisibility(View.VISIBLE);
@@ -294,7 +290,7 @@ if(isShowNotifications){
                 return super.parseNetworkError(volleyError);
             }
         };
-        ;
+
 
         RequestQueue queue = Volley.newRequestQueue(activity);
         queue.add(request);
@@ -348,7 +344,7 @@ if(isShowNotifications){
     @Override
     protected void onResume() {
         super.onResume();
-        getCurrentQuranVersion();
+//        getCurrentQuranVersion();
         utils.setAnimWait(R.anim.fade_in, binding.mSuraRv, 0, activity);
         utils.setAnimWait(R.anim.fade_in, binding.mTopHeaderHolder, 0, activity);
         utils.setAnimWait(R.anim.fade_in, binding.mLastReadHolder, 0, activity);
@@ -643,6 +639,42 @@ if(isShowNotifications){
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else
             activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+
+    }
+
+    private void onScroll() {
+
+        final int[] state = new int[1];
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            binding.mNestedScroll.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+                @Override
+                public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+
+                    if (scrollY <= oldScrollY) {
+                        i++;
+                        utils.log("Scroll", "i " + i);
+
+                        if (i > 80) {
+                            getSupportActionBar().show();
+                            i = 0;
+                        }
+
+                        //scroll up
+
+                    } else {
+                        if (scrollY > 2200) {
+                            getSupportActionBar().hide();
+
+                        }
+
+
+                    }
+
+
+                }
+            });
+        }
 
 
     }

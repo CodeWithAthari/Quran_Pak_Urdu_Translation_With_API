@@ -7,11 +7,11 @@
         <deviceKey>
           <Key>
             <type value="VIRTUAL_DEVICE_PATH" />
-            <value value="$USER_HOME$/.android/avd/6.3_Inch_Device.avd" />
+            <value value="$USER_HOME$/.android/avd/My_Mini_Emulator_API_30.avd" />
           </Key>
         </deviceKey>
       </Target>
     </targetSelectedWithDropDown>
-    <timeTargetWasSelectedWithDropDown value="2022-10-24T08:21:02.847684Z" />
+    <timeTargetWasSelectedWithDropDown value="2022-10-24T15:59:42.173606Z" />
   </component>
 </project>

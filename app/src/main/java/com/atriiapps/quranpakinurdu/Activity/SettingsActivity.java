@@ -1,21 +1,22 @@
 package com.atriiapps.quranpakinurdu.Activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.atriiapps.quranpakinurdu.R;
 import com.atriiapps.quranpakinurdu.Utilities.Constants;
 import com.atriiapps.quranpakinurdu.Utilities.pref_utils;
 import com.atriiapps.quranpakinurdu.Utilities.utils;
 import com.atriiapps.quranpakinurdu.databinding.ActivitySettingsBinding;
+
+import java.util.Objects;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -40,10 +41,27 @@ public class SettingsActivity extends AppCompatActivity {
         getDefaultStatusBarSettings();
         binding = ActivitySettingsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        setSupportActionBar(binding.toolbar.mToolbar);
+        final Drawable upArrow = getResources().getDrawable(R.drawable.ic_baseline_arrow_back_ios_24);
+        upArrow.setColorFilter(Color.parseColor("#FFFFFF"), PorterDuff.Mode.SRC_ATOP);
+        Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(upArrow);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        binding.toolbar.mToolbarText.setText("Settings");
+
         pref_utils.PREF_INIT(activity);
 
         functions();
 
+
+
+
+
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
 
     }
 
@@ -78,13 +96,14 @@ public class SettingsActivity extends AppCompatActivity {
 
             pref_utils.put_Pref_String(activity, "text_style", options[binding.mTextPos.getSelectedItemPosition()]);
             pref_utils.put_Pref_Int(activity, "text_style_id", binding.mTextPos.getSelectedItemPosition());
-
-            utils.setToast(activity, "Saved");
-            finishAffinity();
-            startActivity(new Intent(activity, MainActivity.class));
             pref_utils.put_Pref_Boolean(activity, "hide_status_bar", isHideStatusBar);
 
             pref_utils.put_Pref_Boolean(activity, "show_notifications", isShowNotifications);
+
+            utils.setToast(activity, "Saved");
+            finishAffinity();
+            startActivity(new Intent(activity, SplashActivity.class));
+
 
 
         });

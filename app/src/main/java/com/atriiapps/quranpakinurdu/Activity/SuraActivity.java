@@ -1,9 +1,12 @@
 package com.atriiapps.quranpakinurdu.Activity;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -13,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,6 +38,7 @@ import com.atriiapps.quranpakinurdu.Models.SuraModel;
 import com.atriiapps.quranpakinurdu.Models.UrduModel;
 import com.atriiapps.quranpakinurdu.R;
 import com.atriiapps.quranpakinurdu.Utilities.Constants;
+import com.atriiapps.quranpakinurdu.Utilities.ExternalConstants;
 import com.atriiapps.quranpakinurdu.Utilities.VariableUtils;
 import com.atriiapps.quranpakinurdu.Utilities.pref_utils;
 import com.atriiapps.quranpakinurdu.Utilities.utils;
@@ -45,13 +50,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 
 public class SuraActivity extends AppCompatActivity {
-    ActivitySurahBinding binding;
+   public static ActivitySurahBinding binding;
     SuraActivity activity = this;
 
     SuraViewerAdapter adapter;
@@ -63,6 +69,7 @@ public class SuraActivity extends AppCompatActivity {
 
     int lastAya, lastSura, aya_no;
     Constants Constants = new Constants();
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +93,7 @@ public class SuraActivity extends AppCompatActivity {
             getSuraName();
             utils.setToast(activity, "Searching Verse " + aya_no);
         }
+        playingSura();
 
         pref_utils.put_Pref_String(activity, "last_sura_arabic_name", sura_arabic_name);
         pref_utils.put_Pref_String(activity, "last_sura_eng_name", sura_name);
@@ -97,14 +105,78 @@ public class SuraActivity extends AppCompatActivity {
 
     }
 
+    private void playingSura() {
+//        binding.mPlayerholder.setVisibility(View.GONE);
+        binding.mPlayer.mPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog = new ProgressDialog(activity);
+                dialog.setCancelable(false);
+                dialog.setMessage("Loading Sura...");
+                dialog.show();
+                utils.setToast(activity, "Playing Wait");
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer.reset();
+//                String url = ExternalConstants.PLAY_SURA_128_ARABIC + sura_no + ".mp3";
+                String url = "android.resources://"+getPackageName()+"/res/raw/audio.mp3";
+                utils.log("audio",url);
+                Uri uri = Uri.parse(url);
+                try {
+                    mediaPlayer.setDataSource(activity, uri);
+                    mediaPlayer.prepare();
+                } catch (IOException e) {
+                    dialog.dismiss();
+                    e.printStackTrace();
+                  utils.log("error",e.toString());
+
+                }
+                mediaPlayer.setOnPreparedListener(mp -> {
+                    Toast.makeText(activity, "Prepared", Toast.LENGTH_SHORT).show();
+
+                    mediaPlayer.start();
+                    dialog.dismiss();
+                });
+
+                mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                    dialog.dismiss();
+                    switch (what) {
+                        case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
+                            Toast.makeText(activity, "Media Error", Toast.LENGTH_SHORT).show();
+                            break;
+                        case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
+                            Toast.makeText(activity, "Radio Server Died", Toast.LENGTH_SHORT).show();
+                            break;
+                        case MediaPlayer.MEDIA_ERROR_UNKNOWN:
+                            Toast.makeText(activity, "Stream is possibly offline", Toast.LENGTH_LONG).show();
+                            break;
+                        case MediaPlayer.MEDIA_ERROR_IO:
+                            Toast.makeText(activity, "IO Error", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                    return false;
+                });
+
+
+                mediaPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+                    @Override
+                    public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
+                        Toast.makeText(SuraActivity.this, " "+i, Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            }
+        });
+
+
+    }
+
     private void getStatusBarSettings() {
 
-        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity,"hide_status_bar",true);
-        if(isHideStatusBar)
+        boolean isHideStatusBar = pref_utils.get_Pref_Boolean(activity, "hide_status_bar", true);
+        if (isHideStatusBar)
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         else
             activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
 
 
     }
@@ -145,7 +217,54 @@ public class SuraActivity extends AppCompatActivity {
 
                 },
                 error -> {
-                });
+                })
+
+        {
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                try {
+                    Cache.Entry cacheEntry = HttpHeaderParser.parseCacheHeaders(response);
+                    if (cacheEntry == null) {
+                        cacheEntry = new Cache.Entry();
+                    }
+                    final long cacheHitButRefreshed = 3 * 60 * 1000; // in 3 minutes cache will be hit, but also refreshed on background
+                    final long cacheExpired = 24 * 60 * 60 * 1000; // in 24 hours this cache entry expires completely
+                    long now = System.currentTimeMillis();
+                    final long softExpire = now + cacheHitButRefreshed;
+                    final long ttl = now + cacheExpired;
+                    cacheEntry.data = response.data;
+                    cacheEntry.softTtl = softExpire;
+                    cacheEntry.ttl = ttl;
+                    String headerValue;
+                    headerValue = response.headers.get("Date");
+                    if (headerValue != null) {
+                        cacheEntry.serverDate = HttpHeaderParser.parseDateAsEpoch(headerValue);
+                    }
+                    headerValue = response.headers.get("Last-Modified");
+                    if (headerValue != null) {
+                        cacheEntry.lastModified = HttpHeaderParser.parseDateAsEpoch(headerValue);
+                    }
+                    cacheEntry.responseHeaders = response.headers;
+                    final String jsonString = new String(response.data,
+                            HttpHeaderParser.parseCharset(response.headers));
+                    return Response.success(jsonString, cacheEntry);
+                } catch (Exception e) {
+                    return Response.error(new ParseError(e));
+                }
+            }
+
+
+            @Override
+            public void deliverError(VolleyError error) {
+                super.deliverError(error);
+            }
+
+            @Override
+            protected VolleyError parseNetworkError(VolleyError volleyError) {
+                return super.parseNetworkError(volleyError);
+            }
+        };
+                ;
 
         RequestQueue queue = Volley.newRequestQueue(activity);
 
@@ -165,6 +284,9 @@ public class SuraActivity extends AppCompatActivity {
 
 
     }
+
+
+
 
     private void lastRead() {
 
@@ -325,6 +447,11 @@ public class SuraActivity extends AppCompatActivity {
         queue.add(request);
 
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     private void onScroll() {
